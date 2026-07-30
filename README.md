@@ -1,8 +1,14 @@
 # BTS7960Library
-ESP32 (Arduino) library to control the BTS7960 Dual H-Bridge, that can drive DC-Motor up to 43A
+Arduino library to control the BTS7960 Dual H-Bridge, that can drive up to 43A
+
+## Supported Hardware
+- Practically any board
+- Arduino and variants
+- ESP8266
+- ESP32
 
 ## Usage
-Then create an instance of the BTS7960 with four pins constructor
+Create an instance of the BTS7960 with four pins constructor
 ```
 BTS7960 motor1(L_EN, R_EN, L_PWM, R_PWM);
 ```
@@ -11,6 +17,7 @@ Or three pins constructor, in case you use the same pin for both left and right 
 ```
 BTS7960 motor1(EN, L_PWM, R_PWM);
 ```
+
 
 ## Methods
 
