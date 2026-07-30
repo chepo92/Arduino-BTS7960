@@ -1,14 +1,25 @@
 # BTS7960 Library
 
-Arduino library for controlling the **BTS7960 (IBT-2)** dual H-Bridge motor driver, capable of driving DC motors up to **43 A** (with adequate cooling and power supply).
+Arduino library for the **BTS7960 (IBT-2)** dual H-Bridge motor driver.
 
-The library supports:
+The library provides two abstraction levels:
 
+- **BTS7960Bridge**: Controls an individual bridge (Left or Right) of the BTS7960 module.
+- **BTS7960Driver**: Controls both bridges together as a complete motor driver.
+
+Current sensing through the **L_IS** and **R_IS** pins is supported when available.
+
+---
+
+# Features
+
+- Supports Arduino, ESP8266, ESP32 and most Arduino-compatible boards
+- Independent control of the Left and Right bridges
+- High-level driver for controlling both bridges together
 - Enable/Disable control
-- PWM speed control in both directions
-- Active braking
-- Current sensing through the **L_IS** and **R_IS** pins (optional)
-- Arduino, ESP8266, ESP32, and most Arduino-compatible boards
+- Forward and reverse PWM control
+- Current sensing support through **L_IS** and **R_IS**
+- Optional ADC resolution configuration
 
 ---
 
@@ -25,272 +36,323 @@ The library supports:
 
 Install the library through the Arduino Library Manager or copy it into your `libraries` folder.
 
-For ESP32, this library depends on:
+## Dependencies
+
+### ESP32
+
+This library depends on:
 
 - **ESP32_AnalogWrite**
   - https://github.com/ERROPiX/ESP32_AnalogWrite
 
 ---
 
+# Module Layout
+
+The BTS7960 module exposes two independent bridges labeled:
+
+- **Left (L)** → `L_EN`, `L_PWM`, `L_IS`
+- **Right (R)** → `R_EN`, `R_PWM`, `R_IS`
+
+These names correspond to the labels printed on most BTS7960 modules. They may also be considered **Bridge A** and **Bridge B**, depending on the manufacturer.
+
+---
+
 # Constructors
 
-## 1. Shared Enable Pin
+## BTS7960Bridge
 
-Use this constructor when both enable inputs are tied together.
+Controls one bridge of the BTS7960 module.
 
 ```cpp
-BTS7960 motor(EN, L_PWM, R_PWM);
+BTS7960Bridge(
+    enablePin,
+    forwardPwmPin,
+    reversePwmPin,
+    currentSensePin,
+    adcResolution);
 ```
 
 Example:
 
 ```cpp
-BTS7960 motor(4, 5, 6);
-```
-
----
-
-## 2. Independent Enable Pins
-
-Use separate enable pins for the left and right half-bridges.
-
-```cpp
-BTS7960 motor(L_EN, R_EN, L_PWM, R_PWM);
-```
-
-Example:
-
-```cpp
-BTS7960 motor(7, 8, 5, 6);
-```
-
----
-
-## 3. Current Sense Support
-
-If your BTS7960 module exposes the **L_IS** and **R_IS** outputs, they can be connected for current monitoring.
-
-```cpp
-BTS7960 motor(
+BTS7960Bridge leftBridge(
     L_EN,
-    R_EN,
     L_PWM,
     R_PWM,
     L_IS,
-    R_IS
-);
+    4095);
+```
+
+---
+
+## BTS7960Driver
+
+Controls both bridges simultaneously.
+
+```cpp
+BTS7960Driver(
+    leftEnable,
+    rightEnable,
+    leftForwardPwm,
+    leftReversePwm,
+    rightForwardPwm,
+    rightReversePwm,
+    leftCurrentSense,
+    rightCurrentSense,
+    leftAdcResolution,
+    rightAdcResolution);
 ```
 
 Example:
 
 ```cpp
-BTS7960 motor(7, 8, 5, 6, A0, A1);
-```
-
----
-
-## 4. Custom Current Sense Resolution
-
-Allows specifying the ADC resolution used for each current sense input.
-
-```cpp
-BTS7960 motor(
+BTS7960Driver driver(
     L_EN,
     R_EN,
     L_PWM,
     R_PWM,
+    L_PWM2,
+    R_PWM2,
     L_IS,
     R_IS,
-    L_IS_RES,
-    R_IS_RES
-);
-```
-
-Example:
-
-```cpp
-BTS7960 motor(
-    7,
-    8,
-    5,
-    6,
-    A0,
-    A1,
     4095,
-    4095
-);
+    4095);
 ```
-
-Typical values:
-
-| Platform | ADC Resolution |
-|----------|---------------:|
-| Arduino AVR | 1023 |
-| ESP8266 | 1023 |
-| ESP32 | 4095 |
-
----
----
-
-# Examples
-
-The library includes two ready-to-use examples in the **examples/** folder:
-
-| Example | Description |
-|----------|-------------|
-| **BasicControl** | Demonstrates standard motor control using Enable(), TurnLeft(), TurnRight(), Stop(), and Disable(). |
-| **CurrentSense** | Demonstrates how to use the current sensing inputs (L_IS and R_IS) to measure motor current while driving the motor. |
-
-These examples provide a good starting point for most applications.
 
 ---
 
 # API Summary
 
+## BTS7960Bridge
+
 | Method | Parameters | Returns | Description |
-| :----- | :--------- | :-----: | :---------- |
-| **Enable()** | none | void | Enables the motor driver. |
-| **Disable()** | none | void | Disables the driver (motor coasts freely). |
-| **Stop()** | none | void | Applies active braking. |
-| **TurnLeft()** | `uint8_t pwm` | void | Rotates the motor in the forward direction at the specified PWM duty cycle. |
-| **TurnRight()** | `uint8_t pwm` | void | Rotates the motor in the reverse direction at the specified PWM duty cycle. |
-| **CurrentSenseLeft()** | none | `float` | Returns the estimated current measured on the left half-bridge. Requires **L_IS** to be connected. |
-| **CurrentSenseRight()** | none | `float` | Returns the estimated current measured on the right half-bridge. Requires **R_IS** to be connected. |
+| :------ | :--------- | :-----: | :---------- |
+| **enable()** | none | void | Enables the bridge. |
+| **disable()** | none | void | Disables the bridge. |
+| **forward()** | `uint8_t pwm` | void | Drives the bridge in the forward direction. |
+| **reverse()** | `uint8_t pwm` | void | Drives the bridge in the reverse direction. |
+| **stop()** | none | void | Stops PWM output. |
+| **currentRaw()** | none | `uint16_t` | Returns the raw ADC reading. |
+| **current()** | none | `float` | Returns the current measurement. |
+
+---
+
+## BTS7960Driver
+
+| Method | Parameters | Returns | Description |
+| :------ | :--------- | :-----: | :---------- |
+| **enable()** | none | void | Enables both bridges. |
+| **disable()** | none | void | Disables both bridges. |
+| **forward()** | `uint8_t pwm` | void | Drives both bridges forward. |
+| **reverse()** | `uint8_t pwm` | void | Drives both bridges in reverse. |
+| **stop()** | none | void | Stops both bridges. |
 
 ---
 
 # API Reference
 
-## Enable()
+## BTS7960Bridge
 
-Enables the motor driver.
+### enable()
+
+Enables the bridge.
 
 ```cpp
-motor.Enable();
+bridge.enable();
 ```
 
 ---
 
-## Disable()
+### disable()
 
-Disables the driver, leaving the motor in freewheel (coast).
+Disables the bridge.
 
 ```cpp
-motor.Disable();
+bridge.disable();
 ```
 
 ---
 
-## TurnLeft()
+### forward()
 
-Drives the motor in the forward direction.
-
-```cpp
-motor.TurnLeft(pwm);
-```
-
-Parameter:
-
-| Name | Type | Range |
-|------|------|------|
-| pwm | uint8_t | 0–255 |
-
-Example:
+Drives the bridge in the forward direction.
 
 ```cpp
-motor.TurnLeft(180);
+bridge.forward(180);
 ```
 
 ---
 
-## TurnRight()
+### reverse()
 
-Drives the motor in the reverse direction.
-
-```cpp
-motor.TurnRight(pwm);
-```
-
-Parameter:
-
-| Name | Type | Range |
-|------|------|------|
-| pwm | uint8_t | 0–255 |
-
-Example:
+Drives the bridge in the reverse direction.
 
 ```cpp
-motor.TurnRight(255);
+bridge.reverse(180);
 ```
 
 ---
 
-## Stop()
+### stop()
 
-Actively brakes the motor.
+Stops PWM output.
 
 ```cpp
-motor.Stop();
+bridge.stop();
 ```
 
 ---
 
-## CurrentSenseLeft()
+### currentRaw()
 
-Returns the estimated current flowing through the left half-bridge.
+Returns the raw ADC reading.
 
 ```cpp
-float current = motor.CurrentSenseLeft();
+uint16_t raw = bridge.currentRaw();
 ```
-
-Returns:
-
-- Current in amperes.
-
-Requires the **L_IS** pin to be connected.
 
 ---
 
-## CurrentSenseRight()
+### current()
 
-Returns the estimated current flowing through the right half-bridge.
+Returns the measured current.
 
 ```cpp
-float current = motor.CurrentSenseRight();
+float current = bridge.current();
 ```
-
-Returns:
-
-- Current in amperes.
-
-Requires the **R_IS** pin to be connected.
 
 ---
 
-# Example
+## BTS7960Driver
+
+### enable()
+
+Enables both bridges.
+
+```cpp
+driver.enable();
+```
+
+---
+
+### disable()
+
+Disables both bridges.
+
+```cpp
+driver.disable();
+```
+
+---
+
+### forward()
+
+Drives both bridges forward.
+
+```cpp
+driver.forward(180);
+```
+
+---
+
+### reverse()
+
+Drives both bridges in reverse.
+
+```cpp
+driver.reverse(180);
+```
+
+---
+
+### stop()
+
+Stops both bridges.
+
+```cpp
+driver.stop();
+```
+
+---
+
+# Examples
+
+The library includes two ready-to-use examples in the **examples/** folder.
+
+| Example | Description |
+|----------|-------------|
+| **BasicControl** | Demonstrates standard motor control using `BTS7960Driver`. |
+| **CurrentSense** | Demonstrates current sensing using the `BTS7960Bridge` interface. |
+
+---
+
+# Basic Example
 
 ```cpp
 #include <BTS7960.h>
 
-BTS7960 motor(4, 5, 18);
+BTS7960Driver driver(
+    L_EN,
+    R_EN,
+    L_PWM,
+    R_PWM,
+    L_PWM2,
+    R_PWM2,
+    L_IS,
+    R_IS,
+    4095,
+    4095);
 
 void setup()
 {
-    motor.Enable();
+    driver.enable();
 }
 
 void loop()
 {
-    motor.TurnLeft(200);
+    driver.forward(200);
     delay(2000);
 
-    motor.Stop();
+    driver.stop();
     delay(500);
 
-    motor.TurnRight(200);
+    driver.reverse(200);
     delay(2000);
 
-    motor.Stop();
+    driver.stop();
+    delay(500);
+}
+```
+
+---
+
+# Advanced Example
+
+Each bridge can also be controlled independently.
+
+```cpp
+#include <BTS7960.h>
+
+BTS7960Driver driver(...);
+
+void setup()
+{
+    driver.left.enable();
+    driver.right.enable();
+}
+
+void loop()
+{
+    driver.left.forward(255);
+    driver.right.reverse(200);
+
+    Serial.print("Left current: ");
+    Serial.println(driver.left.current());
+
+    Serial.print("Right current: ");
+    Serial.println(driver.right.current());
+
     delay(500);
 }
 ```
@@ -300,14 +362,13 @@ void loop()
 # Notes
 
 - PWM values range from **0** to **255**.
-- Call `Enable()` before commanding the motor.
-- `Disable()` places the outputs in a high-impedance state, allowing the motor to spin freely.
-- `Stop()` performs active braking.
-- Current sensing requires the module's **L_IS** and **R_IS** pins to be wired to ADC-capable inputs.
-- On ESP32, set the correct ADC resolution when using custom analog configurations.
+- Always call `enable()` before driving the bridge.
+- `disable()` disables the corresponding bridge.
+- Current sensing requires the **L_IS** and/or **R_IS** pins to be connected.
+- Configure the appropriate ADC resolution for your platform (1023 for most Arduino boards, 4095 for ESP32).
 
 ---
 
 # License
 
-MIT License.
+Licensed MIT
