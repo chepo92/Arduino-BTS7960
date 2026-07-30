@@ -5,19 +5,23 @@
 #######################################
 # Datatypes (KEYWORD1)
 #######################################
-BTS7960	KEYWORD1
+BTS7960Bridge	KEYWORD1
+BTS7960Driver	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
-Enable	KEYWORD2
-Disable	KEYWORD2
-Stop	KEYWORD2
-TurnLeft	KEYWORD2
-TurnRight	KEYWORD2
-CurrentSenseLeft	KEYWORD2
-CurrentSenseRight	KEYWORD2
+enable	KEYWORD2
+disable	KEYWORD2
+
+forward	KEYWORD2
+reverse	KEYWORD2
+stop	KEYWORD2
+
+current	KEYWORD2
+currentRaw	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
 #######################################
+NO_PIN	LITERAL1
