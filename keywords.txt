@@ -1,5 +1,5 @@
 #######################################
-# Syntax Coloring Map ColorConverter
+# Syntax Coloring Map BTS7960
 #######################################
 
 #######################################
@@ -11,10 +11,12 @@ BTS7960	KEYWORD1
 # Methods and Functions (KEYWORD2)
 #######################################
 Enable	KEYWORD2
-Stop	KEYWORD2
 Disable	KEYWORD2
+Stop	KEYWORD2
 TurnLeft	KEYWORD2
 TurnRight	KEYWORD2
+CurrentSenseLeft	KEYWORD2
+CurrentSenseRight	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
