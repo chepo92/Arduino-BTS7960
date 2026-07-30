@@ -5,7 +5,7 @@ Arduino library for the **BTS7960 (IBT-2)** dual H-Bridge motor driver.
 The library provides two abstraction levels:
 
 - **BTS7960Bridge**: Controls an individual bridge (Left or Right) of the BTS7960 module.
-- **BTS7960Driver**: Controls both bridges together as a complete motor driver.
+- **BTS7960Driver**: Controls both bridges together as a complete RC car (or similar) dual motor driver .
 
 Current sensing through the **L_IS** and **R_IS** pins is supported when available.
 
