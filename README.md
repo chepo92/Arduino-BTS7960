@@ -1,5 +1,6 @@
 # BTS7960Library
-Arduino library to control the BTS7960 Dual H-Bridge, that can drive up to 43A
+Arduino library to control the BTS7960 Dual H-Bridge, that can drive up to 43A. 
+Supports current sensing through R_is and L_is Pins
 
 ## Supported Hardware
 - Practically any board
