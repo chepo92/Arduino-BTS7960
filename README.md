@@ -1,13 +1,15 @@
 # BTS7960 Library
 
-Arduino library for the **BTS7960 (IBT-2)** dual H-Bridge motor driver.
+Arduino library for the **BTS7960 (IBT-2)** module, consistind in a dual half-Bridge, (making one full H-Bridge motor driver.
 
 The library provides two abstraction levels:
 
-- **BTS7960Bridge**: Controls an individual bridge (Left or Right) of the BTS7960 module.
-- **BTS7960Driver**: Controls both bridges together as a complete RC car (or similar) dual motor driver .
+- **BTS7960Bridge**: Controls an individual leg or half-bridge (Left or Right) of the BTS7960 module.
+- **BTS7960Driver**: Controls both bridges together as a complete RC car (or similar) motor driver .
 
 Current sensing through the **L_IS** and **R_IS** pins is supported when available.
+
+Datasheet: https://www.infineon.com/assets/row/public/documents/10/57/infineon-bts7960-ds-en.pdf
 
 ---
 
